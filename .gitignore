@@ -48,3 +48,14 @@ env/
 dmypy.json
 
 .pyre/
+
+__pycache__
+*.pyc
+.pytest_cache
+.git
+.gitignore
+tests/
+.env
+
+Cache
+Data

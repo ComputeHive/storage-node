@@ -10,3 +10,9 @@ pluggy==1.6.0
 Pygments==2.19.2
 pytest==9.0.2
 typing_extensions==4.15.0
+
+psutil
+pyzmq
+
+Pillow
+numpy

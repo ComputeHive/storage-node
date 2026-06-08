@@ -12,9 +12,9 @@ logging.basicConfig(
 
 
 class AuthenticationError(Exception):
-    """Raised when login credentials are rejected."""
+    """Raised when login credentials are rejected"""
 class NetworkError(Exception):
-    """Raised when the coordination server is unreachable."""
+    """Raised when the coordination server is unreachable"""
 
 @dataclass
 class ContractQueryResult:
