@@ -21,14 +21,11 @@ class ContractQueryResult:
     shard_ids: list[str]
     success: bool
 class CoordinationClient:
-    _SIGNIN_ROUTE = "/storage/signin"
-
-    _HEARTBEAT_ROUTE = "/storage/heartbeat"
-    _WITHDRAW_ROUTE = "/storage/withdraw"
-    _UPDATE_CONN_ROUTE = "/storage/updateConnection"
-
-    _SHARD_DONE_ROUTE = "/storage/shardDoneUploading"
-    _ACTIVE_CONTRACTS_ROUTE = "/storage/activeContracts"
+    _SIGNIN_ROUTE = "/storage-nodes/signin"
+    _HEARTBEAT_ROUTE = "/storage-nodes/me/heartbeat"
+    _UPDATE_CONN_ROUTE = "/storage-nodes/me/connection"
+    _SHARD_DONE_ROUTE = "/storage-nodes/me/shards/done"
+    _ACTIVE_CONTRACTS_ROUTE = "/storage-nodes/me/contracts"
     def __init__(
         self,
         server_url: str,
@@ -79,6 +76,17 @@ class CoordinationClient:
 
             logger.error("POST %s failed: %s", url, exc)
             return None
+    def _safe_patch(self, route: str, body: dict) -> Optional[httpx.Response]:
+        url = self._build_url(route)
+        try:
+            return self._http.patch(
+                url, json=body, headers=self._auth_headers()
+
+            )
+        except httpx.RequestError as exc:
+
+            logger.error("POST %s failed: %s", url, exc)
+            return None
 
     def _safe_get(self, route: str) -> Optional[httpx.Response]:
 
@@ -115,7 +123,7 @@ class CoordinationClient:
         return False
 
     def send_heart_beat(self) -> None:
-        result = self._safe_get(self._HEARTBEAT_ROUTE)
+        result = self._safe_post(self._HEARTBEAT_ROUTE,{})
 
         if result is None:
             logger.warning("Can not go online")
@@ -123,7 +131,7 @@ class CoordinationClient:
     def withdraw_request(self, shard: str) -> None:
         body = {"shard_id": shard}
 
-        result = self._safe_post(self._WITHDRAW_ROUTE, body)
+        result = self._safe_post(f"storage-nodes/me/contracts/{shard}/withdrawal", body)
         if result is None:
             logger.warning("Can not go online")
 
@@ -131,14 +139,14 @@ class CoordinationClient:
 
         body = {"ip_address": ip_address, "port": port}
 
-        result = self._safe_post(self._UPDATE_CONN_ROUTE, body)
+        result = self._safe_patch(self._UPDATE_CONN_ROUTE, body)
         if result is None:
             logger.warning("Can not go online")
 
     def done_uploading(self, shard_id: str) -> None:
         body = {"shard_id": shard_id}
 
-        result = self._safe_post(self._SHARD_DONE_ROUTE, body)
+        result = self._safe_patch(self._SHARD_DONE_ROUTE, body)
 
         if result is None:
             logger.warning("Can not go online")
